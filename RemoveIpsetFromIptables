@@ -1,0 +1,6 @@
+#!/bin/sh
+
+MyIPSetName='irc_tor_ips'
+
+iptables -D INPUT -m set --match-set $MyIPSetName src -j DROP
+

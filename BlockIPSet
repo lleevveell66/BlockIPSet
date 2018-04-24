@@ -1,0 +1,38 @@
+#!/bin/sh
+###########################################################
+# BlockIPSet v0.3 by level6 of LIE
+# - - - - - - - - - - - - - - - - -
+# You will want to:
+# - yum install ipset
+# - Edit BuildIPList, making sure the output file is 'ips2block.txt'
+# - Edit AddIpsetToIptables to match your firewall rules... sometimes it's something other than the INPUT chain of CentOS.
+# - Run BlockIPSet once, then run the initial iptables script (AddIpsetToIptables) to add the ipset rule.
+# - Cron this thang
+###########################################################
+
+MyIPSetName='irc_tor_ips'
+
+# Create the ipset - no harm trying to re-create.  It does not persist reboot.
+/usr/sbin/ipset create $MyIPSetName hash:ip
+
+# Empty the ipset
+/usr/sbin/ipset flush $MyIPSetName
+
+# Re-build our IP list
+/usr/local/BlockIPSet/BuildIPList
+
+# Re-build our ipset script
+/bin/cat ips2block.txt | grep -v ^# |grep -v ^$ | /bin/sed "s/^/ipset add $MyIPSetName /" | /bin/sort -n | /usr//bin/uniq > /usr/local/BlockIPSet/MyBlockScript
+
+# Run our ipset scrpt to add the IPs to the newly emptied hash
+/bin/chmod 755 /usr/local/BlockIPSet/MyBlockScript
+/usr/local/BlockIPSet/MyBlockScript
+
+# Get a count of IP addresses added
+NUM=`/usr/sbin/ipset list $MyIPSetName | /usr/bin/wc -l`
+
+# Log what we've done
+logger -t BlockIPSet "$NUM IP addresses in $MyIPSetName hash and blocked"
+
+exit 0
+

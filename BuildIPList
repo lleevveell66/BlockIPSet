@@ -1,0 +1,7 @@
+#!/bin/sh
+###############################
+# Edit this script to build your IP list.  Currently, it grabs the tor exit nodes which can reach our IRC server.
+
+/usr/bin/lynx --dump 'https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=24.173.180.75&port=16667'|/usr/bin/tail -n+6>/usr/local/BlockIPSet/ips2block.txt
+
+exit 0
